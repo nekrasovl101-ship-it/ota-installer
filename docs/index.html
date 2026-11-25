@@ -14,6 +14,9 @@
   body { background:var(--bg); color:var(--text); font:16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
          padding:max(24px, env(safe-area-inset-top)) 16px 40px; max-width:640px; margin:0 auto; }
   h1 { font-size:34px; font-weight:800; letter-spacing:-.5px; }
+  .tabs { display:flex; background:#e6e8ec; border-radius:12px; padding:3px; margin:4px 0 16px; }
+  .tab { flex:1; text-align:center; padding:9px 4px; border-radius:9px; font-size:14px; font-weight:600; color:var(--dim); text-decoration:none; white-space:nowrap; }
+  .tab.on { background:#fff; color:var(--text); box-shadow:0 1px 3px #0001; }
   .brand { display:flex; align-items:center; gap:12px; }
   .brand img { width:44px; height:44px; border-radius:10px; box-shadow:0 1px 3px #0002; }
   .sub { color:var(--dim); margin:4px 0 20px; font-size:14px; }
@@ -33,6 +36,7 @@
 <body>
   <div class="brand"><img src="logo.png" alt=""><h1 id="title">AppCore</h1></div>
   <div class="sub" id="sub">Загрузка…</div>
+  <nav class="tabs"><a class="tab on" href="./">Приложения</a><a class="tab" href="https://appcore.nekrasovl101.workers.dev">IPA Signer</a></nav>
   <div id="list"></div>
   <p class="note">Нажми «Загрузить» → «Установить». Иконка появится на домашнем экране.
      Если просит доверие — Настройки → Основные → VPN и управление устройством.</p>
