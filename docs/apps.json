@@ -1,1 +1,31 @@
-{"name":"OTA Installer","apps":[],"names":[],"install":{}}
+{
+  "name": "OTA Installer",
+  "apps": [
+    {
+      "id": "com.ncs.gbox",
+      "name": "GBox",
+      "version": "5.6.7",
+      "build": "567",
+      "minOS": "12.0",
+      "size": 6755885,
+      "signed": true,
+      "expires": "2025-09-04",
+      "team": "xiaoting Zhong",
+      "profileType": "adhoc/dev",
+      "sizeText": "6.4 МБ",
+      "icon": "icons/com.ncs.gbox.png",
+      "ipa": "https://github.com/nekrasovl101-ship-it/ota-installer/releases/download/ipas/com.ncs.gbox.ipa",
+      "manifest": "manifests/com.ncs.gbox.plist",
+      "added": "2026-11-25",
+      "updatedAt": "2026-11-25",
+      "installURL": "itms-services://?action=download-manifest&url=https%3A%2F%2Fnekrasovl101-ship-it.github.io%2Fota-installer%2Fmanifests%2Fcom.ncs.gbox.plist"
+    }
+  ],
+  "names": [
+    "GBox 5.6.7"
+  ],
+  "install": {
+    "GBox 5.6.7": "itms-services://?action=download-manifest&url=https%3A%2F%2Fnekrasovl101-ship-it.github.io%2Fota-installer%2Fmanifests%2Fcom.ncs.gbox.plist"
+  },
+  "updated": "2026-11-25T14:30:24+00:00"
+}
