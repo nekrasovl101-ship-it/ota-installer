@@ -8,3 +8,9 @@ certs_inbox/
 *.p12
 *.mobileprovision
 unsigned.shortcut
+.token_people
+.callback_key
+worker/.kv_id
+worker/wrangler.toml
+worker/.wrangler/
+worker/node_modules/

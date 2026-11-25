@@ -1,0 +1,14 @@
+name = "appcore"
+main = "index.js"
+compatibility_date = "2026-11-01"
+
+rules = [{ type = "Text", globs = ["**/*.html"], fallthrough = true }]
+
+[vars]
+SITE = "__SITE__"
+MAIN_REPO = "__MAIN_REPO__"
+UPLOADS_REPO = "__UPLOADS_REPO__"
+
+[[kv_namespaces]]
+binding = "JOBS"
+id = "__KV_ID__"

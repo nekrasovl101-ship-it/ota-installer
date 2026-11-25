@@ -4,21 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>OTA Installer</title>
+<title>AppCore</title>
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#f5f6f8">
 <style>
-  :root { --bg:#0e0b16; --card:#1a1526; --line:#2a2238; --text:#f2eefa; --dim:#9a90ad; --accent:#8b5cf6; }
+  :root { --bg:#f5f6f8; --card:#ffffff; --line:#e3e5e9; --text:#111214; --dim:#6b7078; --accent:#111214; --bad:#d93025; }
   * { box-sizing:border-box; margin:0; padding:0; }
   body { background:var(--bg); color:var(--text); font:16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
          padding:max(24px, env(safe-area-inset-top)) 16px 40px; max-width:640px; margin:0 auto; }
   h1 { font-size:34px; font-weight:800; letter-spacing:-.5px; }
+  .brand { display:flex; align-items:center; gap:12px; }
+  .brand img { width:44px; height:44px; border-radius:10px; box-shadow:0 1px 3px #0002; }
   .sub { color:var(--dim); margin:4px 0 20px; font-size:14px; }
   .app { display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid var(--line); }
-  .app img { width:64px; height:64px; border-radius:15px; flex:none; background:var(--card); object-fit:cover; }
+  .app img { width:64px; height:64px; border-radius:15px; flex:none; background:var(--card); box-shadow:0 0 0 1px var(--line); object-fit:cover; }
   .info { flex:1; min-width:0; }
   .name { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .meta { color:var(--dim); font-size:13px; }
   .warn { color:#f59e0b; }
-  .get { background:var(--card); color:var(--accent); font-weight:700; text-decoration:none; padding:7px 20px;
+  .get { background:#eceef1; color:var(--accent); font-weight:700; text-decoration:none; padding:7px 20px;
          border-radius:999px; font-size:15px; flex:none; }
   .get:active { opacity:.6; }
   .empty { color:var(--dim); text-align:center; padding:60px 0; }
@@ -26,7 +31,7 @@
 </style>
 </head>
 <body>
-  <h1 id="title">OTA Installer</h1>
+  <div class="brand"><img src="logo.png" alt=""><h1 id="title">AppCore</h1></div>
   <div class="sub" id="sub">Загрузка…</div>
   <div id="list"></div>
   <p class="note">Нажми «Загрузить» → «Установить». Иконка появится на домашнем экране.
@@ -34,7 +39,7 @@
 <script>
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 fetch("apps.json?t=" + Date.now()).then(r => r.json()).then(cat => {
-  document.getElementById("title").textContent = cat.name || "OTA Installer";
+  document.getElementById("title").textContent = cat.name || "AppCore";
   const apps = cat.apps || [];
   document.getElementById("sub").textContent = apps.length ? `${apps.length} прил.` : "";
   const today = new Date().toISOString().slice(0, 10);

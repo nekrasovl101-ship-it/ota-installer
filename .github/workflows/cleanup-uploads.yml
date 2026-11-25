@@ -1,0 +1,17 @@
+name: cleanup-uploads
+run-name: "Удаление старых файлов людей"
+on:
+  schedule:
+    - cron: "41 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: python3 tools/ci_upload.py cleanup

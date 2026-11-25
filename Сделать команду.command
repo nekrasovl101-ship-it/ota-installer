@@ -15,7 +15,7 @@ fi
 # 2. залить серверную часть (workflows, скрипты)
 mkdir -p .github/workflows && cp tools/workflows/*.yml .github/workflows/
 git add -A && git commit -q -m "Облачная подпись" 2>/dev/null
-git rm -q --cached docs/OTA-Installer.shortcut 2>/dev/null && rm -f docs/OTA-Installer.shortcut && git commit -q -m "убрал старую команду"
+git rm -q --cached docs/AppCore.shortcut 2>/dev/null && rm -f docs/AppCore.shortcut && git commit -q -m "убрал старую команду"
 git pull -q --rebase --autostash; git push -q || { echo "✖ не запушилось"; read -n1; exit 1; }
 
 # 3. токен для команды
@@ -23,7 +23,7 @@ if [ ! -s .token ]; then
   echo
   echo "Нужен токен GitHub для команды (чтобы она могла запускать подпись)."
   echo "Сейчас откроется страница. Там:"
-  echo "  • Token name: OTA Installer"
+  echo "  • Token name: AppCore"
   echo "  • Expiration: максимальный срок"
   echo "  • Repository access: Only select repositories → $REPO"
   echo "  • Permissions → Repository permissions → Actions: Read and write"
@@ -37,16 +37,16 @@ fi
 
 # 4. собрать, подписать, добавить в «Команды»
 TMP=$(mktemp -d)
-python3 tools/make_shortcut.py "$TMP/OTA Installer.shortcut" >/dev/null || { read -n1; exit 1; }
-shortcuts sign --mode people-who-know-me --input "$TMP/OTA Installer.shortcut" --output "$TMP/OTA Installer signed.shortcut" 2>/dev/null \
- || shortcuts sign --mode anyone --input "$TMP/OTA Installer.shortcut" --output "$TMP/OTA Installer signed.shortcut" \
+python3 tools/make_shortcut.py "$TMP/AppCore.shortcut" >/dev/null || { read -n1; exit 1; }
+shortcuts sign --mode people-who-know-me --input "$TMP/AppCore.shortcut" --output "$TMP/AppCore signed.shortcut" 2>/dev/null \
+ || shortcuts sign --mode anyone --input "$TMP/AppCore.shortcut" --output "$TMP/AppCore signed.shortcut" \
  || { echo "✖ Не получилось подписать команду"; read -n1; exit 1; }
-cp "$TMP/OTA Installer signed.shortcut" "../OTA Installer.shortcut"
-open "../OTA Installer.shortcut"
+cp "$TMP/AppCore signed.shortcut" "../AppCore.shortcut"
+open "../AppCore.shortcut"
 
 echo
 echo "✔ Готово. На Маке откроются «Команды» → нажми «Добавить» (если там уже есть старая — замени)."
-echo "Через iCloud команда появится на айфоне. Если нет — скинь файл «OTA Installer.shortcut» по AirDrop."
+echo "Через iCloud команда появится на айфоне. Если нет — скинь файл «AppCore.shortcut» по AirDrop."
 echo "⚠ Файл команды содержит твой токен — никому не кидай."
 echo
 read -n 1 -s -r -p "Нажми любую клавишу, чтобы закрыть"

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-OTA Installer — сервер.
+AppCore — сервер.
 
   python3 tools/ota.py add            # залить все IPA из папки ipa_inbox/
   python3 tools/ota.py add file.ipa   # залить конкретный IPA
@@ -49,7 +49,7 @@ def load_config():
 def load_catalog(cfg):
     if CATALOG.exists():
         return json.loads(CATALOG.read_text("utf-8"))
-    return {"name": cfg.get("store_name", "OTA Installer"), "apps": []}
+    return {"name": cfg.get("store_name", "AppCore"), "apps": []}
 
 
 def save_catalog(cat):
@@ -230,7 +230,7 @@ def upload_ipa(cfg, ipa_path, asset):
     need_gh()
     repo, tag = cfg["repo_full"], cfg["release_tag"]
     if run(["gh", "release", "view", tag, "-R", repo], check=False, capture_output=True).returncode != 0:
-        run(["gh", "release", "create", tag, "-R", repo, "-t", "IPA", "-n", "Хранилище IPA для OTA Installer"])
+        run(["gh", "release", "create", tag, "-R", repo, "-t", "IPA", "-n", "Хранилище IPA для AppCore"])
     with tempfile.TemporaryDirectory() as tmp:
         dst = Path(tmp) / asset
         shutil.copyfile(ipa_path, dst)
@@ -292,7 +292,7 @@ def cmd_add(args):
         try:
             meta, icon = read_ipa(f)
         except Exception as e:
-            notify("OTA Installer", f"{f.name}: не IPA ({e})")
+            notify("AppCore", f"{f.name}: не IPA ({e})")
             move_to(f, "ошибки")
             continue
         if not meta["signed"]:
@@ -312,11 +312,11 @@ def cmd_add(args):
         if args.no_upload:
             ipa_url = f'https://github.com/{cfg["repo_full"]}/releases/download/{cfg["release_tag"]}/{asset}'
         else:
-            notify("OTA Installer", f'Заливаю {meta["name"]} ({human_size(meta["size"])})…')
+            notify("AppCore", f'Заливаю {meta["name"]} ({human_size(meta["size"])})…')
             try:
                 ipa_url = upload_ipa(cfg, f, asset)
             except (subprocess.CalledProcessError, SystemExit) as e:
-                notify("OTA Installer ✖", f'{meta["name"]}: не залился ({e}). Проверь интернет / gh auth')
+                notify("AppCore ✖", f'{meta["name"]}: не залился ({e}). Проверь интернет / gh auth')
                 continue
 
         old = next((a for a in cat["apps"] if a["id"] == meta["id"]), None)
@@ -343,7 +343,7 @@ def cmd_add(args):
     save_catalog(cat)
     if not args.no_push:
         git_push("Добавлено: " + ", ".join(added))
-    notify("OTA Installer ✔", "Залито: " + ", ".join(added) + ". В команде через 1–2 мин")
+    notify("AppCore ✔", "Залито: " + ", ".join(added) + ". В команде через 1–2 мин")
     print(f'\nГотово. Сайт: {cfg["site_url"]}/  (GitHub Pages обновляется ~1 мин)')
 
 
@@ -500,7 +500,7 @@ def cmd_cert_remove(args):
 
 
 def main():
-    p = argparse.ArgumentParser(description="OTA Installer — сервер")
+    p = argparse.ArgumentParser(description="AppCore — сервер")
     sub = p.add_subparsers(dest="cmd", required=True)
     a = sub.add_parser("add", help="залить IPA")
     a.add_argument("files", nargs="*")

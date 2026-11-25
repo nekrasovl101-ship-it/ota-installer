@@ -11,7 +11,7 @@ gh auth status >/dev/null 2>&1 || gh auth login
 if [ ! -d .git ]; then
   git init -q -b main
   git add .
-  git commit -q -m "OTA Installer: сервер"
+  git commit -q -m "AppCore: сервер"
 fi
 
 if ! gh repo view "$USER_/$REPO" >/dev/null 2>&1; then

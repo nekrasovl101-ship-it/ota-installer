@@ -19,7 +19,7 @@ cat > "$PLIST" <<PL
 PL
 launchctl bootout "gui/$(id -u)/com.leva.otainstaller" 2>/dev/null
 launchctl bootstrap "gui/$(id -u)" "$PLIST"
-osascript -e 'display notification "Кидай IPA в ipa_inbox — зальётся сам" with title "OTA Installer: автозаливка включена"'
+osascript -e 'display notification "Кидай IPA в ipa_inbox — зальётся сам" with title "AppCore: автозаливка включена"'
 echo "✔ Автозаливка включена. Работает в фоне, даже после перезагрузки."
 echo "Если macOS спросит доступ к «Рабочему столу» для bash/python3 — жми «Разрешить»."
 echo "Лог: server/autoupload.log"

@@ -7,7 +7,7 @@ LOG="autoupload.log"
 LOCK="/tmp/ota-installer.lock"
 
 ls ipa_inbox >/dev/null 2>&1 || {
-  osascript -e 'display notification "Нет доступа к Рабочему столу. Открой «Включить автозаливку.command» ещё раз" with title "OTA Installer ✖"'
+  osascript -e 'display notification "Нет доступа к Рабочему столу. Открой «Включить автозаливку.command» ещё раз" with title "AppCore ✖"'
   exit 0
 }
 ls ipa_inbox/*.ipa >/dev/null 2>&1 || exit 0

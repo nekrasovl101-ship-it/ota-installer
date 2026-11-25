@@ -1,5 +1,5 @@
 {
-  "name": "OTA Installer",
+  "name": "AppCore",
   "apps": [
     {
       "id": "com.ncs.gbox",

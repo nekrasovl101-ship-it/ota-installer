@@ -95,6 +95,28 @@ def ocsp_status(pem: Path, work: Path):
     return "unknown"
 
 
+def zsign_with(cert_b64, src: Path, dst: Path, bundle_id: str):
+    """Подписать src сертификатом из секрета → dst. Возвращает итоговый bundle id."""
+    work = Path(tempfile.mkdtemp())
+    p12, prov, pw = unpack_cert(cert_b64, work / "cert")
+    profile = read_profile(prov)
+    exp = profile.get("ExpirationDate")
+    if exp and exp.replace(tzinfo=datetime.timezone.utc) < datetime.datetime.now(datetime.timezone.utc):
+        raise RuntimeError("профиль сертификата истёк")
+    # если профиль не wildcard — меняем bundle id на тот, что в профиле
+    app_id = (profile.get("Entitlements") or {}).get("application-identifier", "")
+    extra = []
+    if app_id and not app_id.endswith("*"):
+        bundle_id = app_id.split(".", 1)[1]
+        extra = ["-b", bundle_id]
+    r = subprocess.run(["zsign", "-k", str(p12), "-p", pw, "-m", str(prov), "-o", str(dst), "-z", "6", *extra,
+                        str(src)], capture_output=True, text=True)
+    print(r.stdout[-3000:], r.stderr[-3000:])
+    if r.returncode != 0 or not dst.exists():
+        raise RuntimeError("zsign не смог подписать (неверный пароль или битый сертификат?)")
+    return bundle_id
+
+
 def git_push(msg):
     sh(["git", "config", "user.name", "ota-bot"])
     sh(["git", "config", "user.email", "ota-bot@users.noreply.github.com"])
@@ -143,27 +165,9 @@ def _sign(app_key, cert_id, req):
         raise RuntimeError("сертификат не найден (нет секрета)")
 
     work = Path(tempfile.mkdtemp())
-    p12, prov, pw = unpack_cert(b64, work / "cert")
-    profile = read_profile(prov)
-    exp = profile.get("ExpirationDate")
-    if exp and exp.replace(tzinfo=datetime.timezone.utc) < datetime.datetime.now(datetime.timezone.utc):
-        raise RuntimeError("профиль сертификата истёк")
-
-    # если профиль не wildcard — меняем bundle id на тот, что в профиле
-    app_id = (profile.get("Entitlements") or {}).get("application-identifier", "")
-    bundle_id = app["id"]
-    extra = []
-    if app_id and not app_id.endswith("*"):
-        bundle_id = app_id.split(".", 1)[1]
-        extra = ["-b", bundle_id]
-
     sh(["gh", "release", "download", TAG, "-R", REPO, "-p", f"{app_key}.ipa", "-D", str(work), "--clobber"])
     out = work / "signed.ipa"
-    r = subprocess.run(["zsign", "-k", str(p12), "-p", pw, "-m", str(prov), "-o", str(out), "-z", "6", *extra,
-                        str(work / f"{app_key}.ipa")], capture_output=True, text=True)
-    print(r.stdout[-3000:], r.stderr[-3000:])
-    if r.returncode != 0 or not out.exists():
-        raise RuntimeError("zsign не смог подписать (неверный пароль или битый сертификат?)")
+    bundle_id = zsign_with(b64, work / f"{app_key}.ipa", out, app["id"])
 
     asset = f"{app_key}__{cert_id}.ipa"
     (work / asset).write_bytes(out.read_bytes())
@@ -238,7 +242,7 @@ def cmd_certs():
                 label += f' [{c["id"]}]'
             menu.append(label)
             ids[label] = c["id"]
-    new = {"certs": certs, "menu": menu, "ids": ids, "asIs": AS_IS}
+    new = {"certs": certs, "menu": menu, "ids": ids, "asIs": AS_IS, "asIsFlag": {AS_IS: "1"}}
     old = {k: v for k, v in data.items() if k != "updated"}
     strip = lambda d: json.dumps({**d, "certs": [{k: v for k, v in c.items() if k != "checked"} for c in d.get("certs", [])]},
                                  sort_keys=True, ensure_ascii=False)

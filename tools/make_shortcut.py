@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parent.parent
 cfg = json.loads((ROOT / "config.json").read_text("utf-8"))
 site = (cfg.get("site_url") or f'https://{cfg["github_user"]}.github.io/{cfg["repo"]}').rstrip("/")
 repo = f'{cfg["github_user"]}/{cfg["repo"]}'
-title = cfg.get("store_name", "OTA Installer")
+title = cfg.get("store_name", "AppCore")
 token = (ROOT / ".token").read_text().strip() if (ROOT / ".token").exists() else ""
 if not token:
     sys.exit("нет server/.token")
@@ -31,8 +31,12 @@ def att(uid, name):
     return {"Value": ref(uid, name), "WFSerializationType": "WFTextTokenAttachment"}
 
 
-def var(uid, name):
-    return {"Type": "Variable", "Variable": att(uid, name)}
+def var(uid, name, as_text=False):
+    a = att(uid, name)
+    if as_text:
+        a["Value"]["Aggrandizements"] = [{"Type": "WFCoercionVariableAggrandizement",
+                                          "CoercionItemClass": "WFStringContentItem"}]
+    return {"Type": "Variable", "Variable": a}
 
 
 def text(*parts):
@@ -73,7 +77,7 @@ def header(k, v):
 
 
 (rnd, apps, names, cnt, pick, keys, key, certs, menu, cpick, asis, inst, link,
- ids, cid, body, post, perr, job, st, url, msg) = (U() for _ in range(22))
+ ids, cid, body, post, perr, job, st, url, msg, flag) = (U() for _ in range(23))
 g_empty, g_asis, g_perr, g_done, g_err, g_loop = (U() for _ in range(6))
 
 A = [
@@ -93,9 +97,10 @@ A = [
     act("downloadurl", UUID=certs, WFHTTPMethod="GET", WFURL=text(f"{site}/certs.json?t=", (rnd, "Random Number"))),
     get(menu, (certs, "Contents of URL"), "menu"),
     act("choosefromlist", UUID=cpick, WFInput=att(menu, "Dictionary Value"), WFChooseFromListActionPrompt="Каким сертификатом?"),
-    get(asis, (certs, "Contents of URL"), "asIs"),
     # «как есть» — ставим сразу
-    if_(g_asis, var(cpick, "Chosen Item"), 4, WFConditionalActionString=text((asis, "Dictionary Value"))),
+    get(asis, (certs, "Contents of URL"), "asIsFlag"),
+    get(flag, (asis, "Dictionary Value"), text((cpick, "Chosen Item"))),
+    if_(g_asis, var(flag, "Dictionary Value"), 100),
     get(inst, (apps, "Contents of URL"), "install"),
     get(link, (inst, "Dictionary Value"), text((pick, "Chosen Item"))),
     act("openurl", WFInput=att(link, "Dictionary Value")),
@@ -116,7 +121,7 @@ A = [
             header("Authorization", f"Bearer {token}"),
             header("Accept", "application/vnd.github+json"),
             header("Content-Type", "application/json"),
-            header("User-Agent", "OTA-Installer"),
+            header("User-Agent", "AppCore"),
         ]}, "WFSerializationType": "WFDictionaryFieldValue"}),
     get(perr, (post, "Contents of URL"), "message"),
     if_(g_perr, var(perr, "Dictionary Value"), 100),
@@ -130,14 +135,13 @@ A = [
     act("delay", WFDelayTime=6),
     act("downloadurl", UUID=job, WFHTTPMethod="GET",
         WFURL=text(f"{site}/jobs/", (rnd, "Random Number"), ".json?n=", ("@", "Repeat Index"))),
-    get(st, (job, "Contents of URL"), "status"),
-    if_(g_done, var(st, "Dictionary Value"), 4, WFConditionalActionString="done"),
     get(url, (job, "Contents of URL"), "installURL"),
+    if_(g_done, var(url, "Dictionary Value"), 100),
     act("openurl", WFInput=att(url, "Dictionary Value")),
     act("exit"),
     end_if(g_done),
-    if_(g_err, var(st, "Dictionary Value"), 4, WFConditionalActionString="error"),
     get(msg, (job, "Contents of URL"), "message"),
+    if_(g_err, var(msg, "Dictionary Value"), 100),
     alert("Не подписалось: ", (msg, "Dictionary Value")),
     act("exit"),
     end_if(g_err),
