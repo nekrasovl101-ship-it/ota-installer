@@ -52,6 +52,15 @@ def load_catalog(cfg):
 def save_catalog(cat):
     cat["updated"] = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
     cat["apps"].sort(key=lambda a: a.get("added", ""), reverse=True)
+    # Для быстрой команды на iPhone: список названий и "название -> ссылка установки"
+    names, install = [], {}
+    for a in cat["apps"]:
+        label = f'{a["name"]} {a["version"]}'
+        if label in install:
+            label = f'{label} ({a["id"]})'
+        names.append(label)
+        install[label] = a["installURL"]
+    cat["names"], cat["install"] = names, install
     CATALOG.write_text(json.dumps(cat, ensure_ascii=False, indent=2) + "\n", "utf-8")
 
 
