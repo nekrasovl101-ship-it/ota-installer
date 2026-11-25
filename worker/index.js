@@ -47,7 +47,12 @@ export default {
       if (req.method === "GET" && p === "/certs") {
         const r = await fetch(`${env.SITE}/certs.json?t=${Date.now()}`);
         const d = r.ok ? await r.json() : { menu: [], ids: {} };
-        const list = (d.menu || []).filter((x) => d.ids && d.ids[x]).map((x) => ({ name: x, id: d.ids[x] }));
+        const info = Object.fromEntries((d.certs || []).map((c) => [c.id, c]));
+        const list = (d.menu || []).filter((x) => d.ids && d.ids[x]).map((x) => {
+          const c = info[d.ids[x]] || {};
+          return { name: x, id: d.ids[x], title: c.name || x, type: c.type || null,
+                   expires: c.profileExpires || c.certExpires || null, checked: c.checked || null };
+        });
         return json({ certs: list });
       }
 
@@ -74,12 +79,33 @@ export default {
         return json({ ok: true });
       }
 
+      // свой сертификат (p12 + mobileprovision + пароль) — лежит рядом с IPA, удаляется сразу после подписи
+      if (req.method === "PUT" && (m = p.match(/^\/cert\/([a-f0-9]{20})$/))) {
+        const job = await getJob(env, m[1]);
+        if (!job || job.status !== "uploading") return fail(404, "задача не найдена");
+        const body = await req.text();
+        if (body.length > 400000) return fail(413, "сертификат слишком большой");
+        let d;
+        try { d = JSON.parse(body); } catch { return fail(400, "битые данные"); }
+        if (!d.p12 || !d.prov) return fail(400, "нужны .p12 и .mobileprovision");
+        const rel = await releaseId(env);
+        const r = await fetch(
+          `https://uploads.github.com/repos/${env.UPLOADS_REPO}/releases/${rel}/assets?name=${m[1]}.cert`,
+          { method: "POST", headers: gh(env, { "content-type": "application/octet-stream" }),
+            body: JSON.stringify({ p12: d.p12, prov: d.prov, pw: String(d.pw || "") }) }
+        );
+        if (!r.ok) return fail(502, "GitHub не принял сертификат: " + (await r.text()).slice(0, 200));
+        await putJob(env, m[1], { ...job, own: true });
+        return json({ ok: true });
+      }
+
       // запустить подпись
       if (req.method === "POST" && (m = p.match(/^\/sign\/([a-f0-9]{20})$/))) {
         const job = await getJob(env, m[1]);
         if (!job || job.status !== "uploading") return fail(404, "задача не найдена");
         const { parts, cert } = await req.json();
-        if (!/^[A-F0-9]{8}$/.test(cert || "")) return fail(400, "выбери сертификат");
+        if (!/^([A-F0-9]{8}|OWN)$/.test(cert || "")) return fail(400, "выбери сертификат");
+        if (cert === "OWN" && !job.own) return fail(400, "сначала загрузи свой сертификат");
         if (!Number.isInteger(parts) || parts < 1 || parts > 60) return fail(400, "нет файла");
         const r = await fetch(
           `https://api.github.com/repos/${env.MAIN_REPO}/actions/workflows/sign-upload.yml/dispatches`,
@@ -132,7 +158,9 @@ export default {
         const loc = r.headers.get("location");
         const file = loc ? await fetch(loc) : r;
         if (!file.ok) return fail(502, "не смог достать файл");
-        const h = new Headers({ "content-type": "application/octet-stream" });
+        const fname = (job.name || "app").replace(/[^\w.\- а-яА-ЯёЁ]/g, "_") + (job.version ? ` ${job.version}` : "") + ".ipa";
+        const h = new Headers({ "content-type": "application/octet-stream",
+                                "content-disposition": `attachment; filename*=UTF-8''${encodeURIComponent(fname)}` });
         if (file.headers.get("content-length")) h.set("content-length", file.headers.get("content-length"));
         return new Response(file.body, { headers: h });
       }

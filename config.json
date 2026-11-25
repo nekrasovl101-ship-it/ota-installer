@@ -3,5 +3,7 @@
   "github_user": "nekrasovl101-ship-it",
   "repo": "ota-installer",
   "release_tag": "ipas",
-  "site_url": ""
+  "site_url": "",
+  "worker_url": "https://appcore.nekrasovl101.workers.dev",
+  "uploads_repo": "nekrasovl101-ship-it/ota-uploads"
 }

@@ -26,7 +26,21 @@
   select { width:100%; background:#eceef1; color:var(--text); border:0; border-radius:12px; padding:12px; font-size:16px; -webkit-appearance:none; }
   .btn { display:block; width:100%; text-align:center; background:var(--accent); color:#fff; font-weight:700; font-size:17px;
          border:0; border-radius:14px; padding:15px; margin-top:6px; text-decoration:none; }
+  .btn2 { background:#eceef1; color:var(--text); margin-top:10px; }
   .btn:disabled { opacity:.4; }
+  .own-row { margin-top:10px; }
+  #pw { width:100%; margin-top:10px; background:#eceef1; color:var(--text); border:0; border-radius:12px; padding:12px; font-size:16px; }
+  .hint { color:var(--dim); font-size:12px; margin-top:8px; }
+  .tabs { display:flex; background:#e6e8ec; border-radius:12px; padding:3px; margin-bottom:16px; }
+  .tab { flex:1; border:0; background:none; padding:9px 4px; border-radius:9px; font-size:14px; white-space:nowrap; font-weight:600; color:var(--dim); }
+  .tab.on { background:#fff; color:var(--text); box-shadow:0 1px 3px #0001; }
+  .cert { background:var(--card); box-shadow:0 0 0 1px var(--line); border-radius:16px; padding:14px; margin-bottom:10px;
+          display:flex; align-items:center; gap:12px; }
+  .cert .ok { width:10px; height:10px; border-radius:50%; background:#1e8e3e; flex:none; }
+  .cert .info { flex:1; min-width:0; }
+  .cert .t { font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cert .m { color:var(--dim); font-size:13px; }
+  .cert button { border:0; background:var(--text); color:#fff; font-weight:600; padding:8px 14px; border-radius:99px; font-size:14px; }
   .bar { height:8px; background:var(--line); border-radius:99px; overflow:hidden; margin:14px 0 8px; display:none; }
   .bar i { display:block; height:100%; width:0; background:var(--accent); transition:width .3s; }
   #status { color:var(--dim); font-size:14px; min-height:20px; text-align:center; }
@@ -39,6 +53,14 @@
   <div class="brand"><img src="data:image/png;base64,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" alt=""><h1>AppCore</h1></div>
   <div class="sub">Залей свой IPA, выбери сертификат — и ставь. Файл видишь только ты, через 2 часа он удалится.</div>
 
+  <div class="tabs"><button class="tab on" data-t="sign">Подписать</button><button class="tab" data-t="certs">Сертификаты AppCore</button></div>
+
+  <div id="tab-certs" style="display:none">
+    <div id="clist"><div class="hint">Загрузка…</div></div>
+    <p class="note">Сертификаты проверяются у Apple каждый час. Отозванные и истёкшие убираются из списка сами.</p>
+  </div>
+
+  <div id="tab-sign">
   <div id="form">
     <div class="step">
       <div class="lbl">1. Файл</div>
@@ -47,6 +69,12 @@
     <div class="step">
       <div class="lbl">2. Сертификат</div>
       <select id="cert"><option value="">загрузка…</option></select>
+      <div id="own" style="display:none">
+        <label class="file own-row"><input type="file" id="p12" accept=".p12"><span class="pick">.p12</span><span class="fname" id="p12name">не выбран</span></label>
+        <label class="file own-row"><input type="file" id="prov" accept=".mobileprovision"><span class="pick">.mobileprovision</span><span class="fname" id="provname">не выбран</span></label>
+        <input id="pw" type="password" placeholder="Пароль от .p12" autocomplete="off">
+        <div class="hint">Сертификат используется один раз для этой подписи и сразу удаляется.</div>
+      </div>
     </div>
     <button class="btn" id="go" disabled>Подписать</button>
   </div>
@@ -56,6 +84,9 @@
 
   <div id="done">
     <a class="btn" id="install" href="#">Установить <span id="appname"></span></a>
+    <a class="btn btn2" id="download" href="#" download>Скачать подписанный IPA</a>
+  </div>
+
   </div>
 
   <p class="note">Не ставится? Настройки → Основные → VPN и управление устройством → доверять профилю.
@@ -67,15 +98,43 @@ const st = (t, bad) => { $("status").textContent = t; $("status").className = ba
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let certsOk = false;
 
+function showTab(t) {
+  document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("on", b.dataset.t === t));
+  $("tab-sign").style.display = t === "sign" ? "block" : "none";
+  $("tab-certs").style.display = t === "certs" ? "block" : "none";
+}
+document.querySelectorAll(".tab").forEach((b) => (b.onclick = () => showTab(b.dataset.t)));
+const escH = (x) => String(x ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const ago = (iso) => { if (!iso) return ""; const m = Math.round((Date.now() - Date.parse(iso)) / 60000);
+  return m < 60 ? `${m} мин назад` : m < 1440 ? `${Math.round(m / 60)} ч назад` : `${Math.round(m / 1440)} дн назад`; };
+function renderCerts(list) {
+  $("clist").innerHTML = list.length ? list.map((c) => `
+    <div class="cert"><span class="ok"></span>
+      <div class="info"><div class="t">${escH(c.title)}</div>
+        <div class="m">${c.type === "enterprise" ? "Enterprise" : c.type ? "Developer / Ad-hoc" : ""}${c.expires ? " · до " + escH(c.expires) : ""}</div>
+        <div class="m">работает${c.checked ? " · проверен " + ago(c.checked) : ""}</div></div>
+      <button data-id="${escH(c.id)}">Выбрать</button></div>`).join("")
+    : `<div class="hint">Сертификатов AppCore пока нет — можно подписать своим во вкладке «Подписать».</div>`;
+  $("clist").querySelectorAll("button").forEach((b) => (b.onclick = () => { $("cert").value = b.dataset.id; $("cert").onchange(); showTab("sign"); }));
+}
+
 fetch("/certs").then((r) => r.json()).then((d) => {
+  renderCerts(d.certs);
   const s = $("cert");
-  s.innerHTML = d.certs.length ? d.certs.map((c) => `<option value="${c.id}">${c.name.replace(/</g, "&lt;")}</option>`).join("")
-                               : `<option value="">сертификатов пока нет</option>`;
-  certsOk = d.certs.length > 0; check();
+  s.innerHTML = d.certs.map((c) => `<option value="${c.id}">${c.name.replace(/</g, "&lt;")}</option>`).join("")
+              + `<option value="OWN">🔑 Свой сертификат…</option>`;
+  certsOk = true; s.onchange(); check();
 }).catch(() => st("Не загрузился список сертификатов", true));
 
+$("cert").onchange = () => { $("own").style.display = $("cert").value === "OWN" ? "block" : "none"; check(); };
+$("p12").onchange = () => { $("p12name").textContent = $("p12").files[0]?.name || "не выбран"; check(); };
+$("prov").onchange = () => { $("provname").textContent = $("prov").files[0]?.name || "не выбран"; check(); };
+const b64file = (f) => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result.split(",")[1]); r.onerror = no; r.readAsDataURL(f); });
 $("file").onchange = () => { const f = $("file").files[0]; $("fname").textContent = f ? `${f.name} · ${(f.size / 1e6).toFixed(1)} МБ` : "не выбран"; check(); };
-function check() { $("go").disabled = !($("file").files[0] && certsOk); }
+function check() {
+  const own = $("cert").value === "OWN";
+  $("go").disabled = !($("file").files[0] && certsOk && $("cert").value && (!own || ($("p12").files[0] && $("prov").files[0])));
+}
 
 function putChunk(url, blob, onProgress) {
   return new Promise((ok, no) => {
@@ -95,6 +154,12 @@ $("go").onclick = async () => {
   try {
     const { id, chunk, error } = await (await fetch("/new", { method: "POST" })).json();
     if (error) throw new Error(error);
+    if (cert === "OWN") {
+      st("Загружаю сертификат…");
+      const body = JSON.stringify({ p12: await b64file($("p12").files[0]), prov: await b64file($("prov").files[0]), pw: $("pw").value });
+      const c = await (await fetch(`/cert/${id}`, { method: "PUT", body })).json();
+      if (c.error) throw new Error(c.error);
+    }
     const parts = Math.ceil(f.size / chunk);
     let sent = 0;
     for (let i = 0; i < parts; i++) {
@@ -125,6 +190,7 @@ $("go").onclick = async () => {
       if (j.status === "done") {
         $("fill").style.width = "100%";
         $("install").href = j.installURL;
+        $("download").href = `/ipa/${id}.ipa`;
         $("appname").textContent = j.name ? `«${j.name}»` : "";
         $("done").style.display = "block"; $("form").style.display = "none";
         st("Готово! Жми «Установить» и смотри на домашний экран.");

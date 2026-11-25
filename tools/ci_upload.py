@@ -7,7 +7,9 @@
 Файлы лежат в приватном репо (config.json → uploads_repo), релиз «uploads».
 Результат отправляется обратно в Cloudflare Worker (config.json → worker_url).
 """
+import base64
 import datetime
+import io
 import json
 import os
 import plistlib
@@ -49,7 +51,7 @@ def app_info(ipa: Path):
 def cmd_sign():
     req, parts, cert = os.environ["REQ"], os.environ["PARTS"], os.environ["CERT"]
     if not re.fullmatch(r"[a-f0-9]{20}", req) or not re.fullmatch(r"\d{1,2}", parts) \
-            or not re.fullmatch(r"[A-F0-9]{8}", cert):
+            or not re.fullmatch(r"[A-F0-9]{8}|OWN", cert):
         sys.exit("плохие параметры")
     try:
         _sign(req, int(parts), cert)
@@ -62,11 +64,41 @@ def cmd_sign():
             sys.exit(1)
 
 
+def own_cert(req, work: Path):
+    """Свой сертификат человека: скачать, сразу удалить с GitHub, проверить пароль и отзыв."""
+    name = f"{req}.cert"
+    ci.sh(["gh", "release", "download", TAG, "-R", UP, "-p", name, "-D", str(work), "--clobber"])
+    subprocess.run(["gh", "release", "delete-asset", TAG, name, "-R", UP, "-y"])
+    d = json.loads((work / name).read_text())
+    (work / name).unlink()
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        z.writestr("cert.p12", base64.b64decode(d["p12"]))
+        z.writestr("cert.mobileprovision", base64.b64decode(d["prov"]))
+        z.writestr("password.txt", d.get("pw", ""))
+    b64 = base64.b64encode(buf.getvalue()).decode()
+    chk = work / "chk"
+    p12, prov, pw = ci.unpack_cert(b64, chk)
+    pem = chk / "cert.pem"
+    if not ci.p12_to_pem(p12, pw, pem):
+        raise RuntimeError("неверный пароль от сертификата (или битый .p12)")
+    try:
+        ci.read_profile(prov)
+    except Exception:
+        raise RuntimeError("битый .mobileprovision")
+    if ci.ocsp_status(pem, chk) == "revoked":
+        raise RuntimeError("твой сертификат отозван Apple — нужен другой")
+    return b64
+
+
 def _sign(req, parts, cert):
-    b64 = ci.secrets().get(f"CERT_{cert}")
+    work = Path(tempfile.mkdtemp())
+    if cert == "OWN":
+        b64 = own_cert(req, work)
+    else:
+        b64 = ci.secrets().get(f"CERT_{cert}")
     if not b64:
         raise RuntimeError("сертификат не найден")
-    work = Path(tempfile.mkdtemp())
     names = [f"{req}.part{i:02d}" for i in range(parts)]
     for n in names:
         ci.sh(["gh", "release", "download", TAG, "-R", UP, "-p", n, "-D", str(work), "--clobber"])
@@ -94,10 +126,12 @@ def cmd_cleanup():
     out = subprocess.run(["gh", "api", "--paginate", f"repos/{UP}/releases/tags/{TAG}",
                           "--jq", ".assets[] | [.name, .created_at] | @tsv"],
                          capture_output=True, text=True, check=True).stdout
-    limit = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=2)
+    now = datetime.datetime.now(datetime.timezone.utc)
     for line in out.splitlines():
         name, created = line.split("\t")
-        if datetime.datetime.fromisoformat(created.replace("Z", "+00:00")) < limit:
+        age = now - datetime.datetime.fromisoformat(created.replace("Z", "+00:00"))
+        # чужие сертификаты не держим дольше 15 минут, файлы — 2 часа
+        if age > (datetime.timedelta(minutes=15) if name.endswith(".cert") else datetime.timedelta(hours=2)):
             print("удаляю", name)
             subprocess.run(["gh", "release", "delete-asset", TAG, name, "-R", UP, "-y"])
 
