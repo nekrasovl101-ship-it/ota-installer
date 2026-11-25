@@ -1,0 +1,32 @@
+name: sign
+run-name: "Подпись ${{ inputs.app }} → ${{ inputs.cert }} (${{ inputs.req }})"
+on:
+  workflow_dispatch:
+    inputs:
+      app:  { description: "ключ приложения (bundle id)", required: true }
+      cert: { description: "id сертификата", required: true }
+      req:  { description: "id запроса", required: true }
+permissions:
+  contents: write
+jobs:
+  sign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Собрать zsign
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq g++ pkg-config libssl-dev libminizip-dev zlib1g-dev >/dev/null
+          git clone -q --depth 1 https://github.com/zhlynn/zsign.git /tmp/zsign
+          make -s -C /tmp/zsign/build/linux -j4
+          sudo cp /tmp/zsign/bin/zsign /usr/local/bin/zsign
+          zsign -v || true
+      - name: Подписать
+        env:
+          APP: ${{ inputs.app }}
+          CERT: ${{ inputs.cert }}
+          REQ: ${{ inputs.req }}
+          ALL_SECRETS: ${{ toJSON(secrets) }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/ci.py sign

@@ -2,3 +2,9 @@ ipa_inbox/
 *.ipa
 .DS_Store
 __pycache__/
+autoupload.log
+certs_inbox/
+.token
+*.p12
+*.mobileprovision
+unsigned.shortcut
