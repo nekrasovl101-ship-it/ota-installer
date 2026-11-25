@@ -1,0 +1,4 @@
+ipa_inbox/
+*.ipa
+.DS_Store
+__pycache__/
